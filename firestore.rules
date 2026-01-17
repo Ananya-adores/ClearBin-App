@@ -1,0 +1,31 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if false; 
+    }
+
+    match /reports/{reportId} {
+      allow read, update, delete: if isAdmin();
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      // Allow creation with 'status' set to 'pending' as per MVP requirements
+      allow create: if isSignedIn() 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && !request.resource.data.keys().hasAny(['severity', 'aiAnalysis', 'confidence', 'aiFeedback']);
+    }
+  }
+}

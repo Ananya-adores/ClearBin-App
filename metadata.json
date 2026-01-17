@@ -1,0 +1,8 @@
+{
+  "name": "ClearBin",
+  "description": "An AI-powered smart waste reporting and urban insight system designed for campuses and communities to optimize sanitation and identify waste hotspots.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
